@@ -14,10 +14,8 @@
       min-height: 100vh;
     }
 
-    /* ── Layout ── */
     .page { max-width: 480px; margin: 0 auto; padding: 2rem 1rem 3rem; }
 
-    /* ── Header ── */
     .header { text-align: center; margin-bottom: 2.5rem; }
     .header-icon {
       display: inline-flex; align-items: center; justify-content: center;
@@ -28,7 +26,6 @@
     h1 { font-size: 1.75rem; font-weight: 700; letter-spacing: -.02em; }
     .subtitle { margin-top: .5rem; font-size: .875rem; color: #6b7280; max-width: 280px; margin-left: auto; margin-right: auto; }
 
-    /* ── Buttons ── */
     .btn-camera {
       width: 100%; border: 2px dashed rgba(79,70,229,.3); border-radius: 20px;
       padding: 3.5rem 1rem; display: flex; flex-direction: column; align-items: center; gap: 1rem;
@@ -72,7 +69,6 @@
     .btn-outline:hover { border-color: #4f46e5; }
     .btn-outline svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 
-    /* ── States ── */
     .spinner-wrap { display: flex; flex-direction: column; align-items: center; gap: 1rem; padding: 4rem 0; }
     .spinner {
       width: 32px; height: 32px; border: 3px solid #e5e7eb;
@@ -82,13 +78,11 @@
     .spinner-sm { width: 20px; height: 20px; border-width: 2px; }
     .spinner-label { font-size: .875rem; color: #6b7280; }
 
-    /* ── Preview ── */
     .preview-card { border: 1px solid #e5e7eb; border-radius: 20px; overflow: hidden; background: #fff; box-shadow: 0 1px 4px rgba(0,0,0,.06); }
     .preview-bar { padding: .5rem .75rem; border-bottom: 1px solid #e5e7eb; background: #f9fafb; font-size: .7rem; font-weight: 500; color: #9ca3af; text-transform: uppercase; letter-spacing: .08em; }
     .preview-img-wrap { padding: 1rem; background: #fff; display: flex; align-items: center; justify-content: center; }
     .preview-img { max-height: 260px; width: auto; border-radius: 10px; object-fit: contain; filter: grayscale(100%) contrast(200%) brightness(1.1); background: #fff; }
 
-    /* ── Result ── */
     .result-card { border: 1px solid #e5e7eb; border-radius: 20px; background: #fff; padding: 1.25rem; box-shadow: 0 1px 4px rgba(0,0,0,.06); }
     .result-header { display: flex; align-items: center; gap: .5rem; margin-bottom: 1rem; }
     .result-header svg { width: 20px; height: 20px; stroke: #10b981; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
@@ -100,7 +94,6 @@
     }
     .result-note { margin-top: .75rem; font-size: .75rem; color: #9ca3af; text-align: center; }
 
-    /* ── Camera Overlay ── */
     #camera-overlay {
       position: fixed; inset: 0; z-index: 100;
       background: #000; display: none; flex-direction: column;
@@ -152,7 +145,7 @@
 </head>
 <body>
 
-<!-- ══ Camera Overlay ══ -->
+<!-- Camera Overlay -->
 <div id="camera-overlay">
   <button id="camera-close" onclick="closeCamera()">
     <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -172,9 +165,8 @@
 
 <canvas id="snap-canvas"></canvas>
 
-<!-- ══ Main Page ══ -->
+<!-- Main Page -->
 <div class="page">
-  <!-- Header -->
   <div class="header">
     <div class="header-icon">
       <svg viewBox="0 0 24 24"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><line x1="7" y1="12" x2="17" y2="12"/></svg>
@@ -248,32 +240,20 @@
 
 <script type="module">
   import { createClient } from '@base44/sdk';
-  
-  // You'll need to define these or import them
-  // For now, I'll create placeholder values - replace with your actual imports
-  const appParams = {
-    appId: 'your-app-id', // Replace with your actual app ID
-    token: 'your-token', // Replace with your actual token
-    functionsVersion: 'v1',
-    appBaseUrl: 'https://your-app-base-url.com'
-  };
-  
-  const { appId, token, functionsVersion, appBaseUrl } = appParams;
 
-  // Create the base44 client
+  // Initialize base44 with your credentials
   const base44 = createClient({
-    appId,
-    token,
-    functionsVersion,
-    serverUrl: '',
-    requiresAuth: false,
-    appBaseUrl
+    appId: "6a373ae576e115556c4f7af3",
+    headers: {
+      "api_key": "6f64e580e2f843ef985ec3e5336c3266"
+    }
   });
 
-  // Expose base44 to the global scope for use in inline onclick handlers
+  // Expose base44 to the global scope for inline handlers
   window.base44 = base44;
 
-  console.log('base44 client initialized:', base44);
+  console.log('✅ base44 client initialized successfully!');
+  console.log('App ID:', '6a373ae576e115556c4f7af3');
 
   // ── State ──
   let currentImageUrl = null;
@@ -301,7 +281,11 @@
 
     try {
       cameraStream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: { ideal: "environment" }, width: { ideal: 1920 }, height: { ideal: 1080 } },
+        video: { 
+          facingMode: { ideal: "environment" }, 
+          width: { ideal: 1920 }, 
+          height: { ideal: 1080 } 
+        },
         audio: false
       });
       const video = document.getElementById("video");
@@ -313,6 +297,7 @@
     } catch (e) {
       document.getElementById("video").style.display = "none";
       window.show("camera-error");
+      console.error('Camera error:', e);
     }
   };
 
@@ -323,7 +308,10 @@
   };
 
   window.stopStream = function() {
-    if (cameraStream) { cameraStream.getTracks().forEach(t => t.stop()); cameraStream = null; }
+    if (cameraStream) { 
+      cameraStream.getTracks().forEach(t => t.stop()); 
+      cameraStream = null; 
+    }
   };
 
   window.snapPhoto = function() {
@@ -354,22 +342,22 @@
     window.show("scan-btn");
     currentImageUrl = null;
 
-    // Show local preview immediately (B&W via CSS filter)
+    // Show local preview immediately
     const localUrl = URL.createObjectURL(file);
     document.getElementById("preview-img").src = localUrl;
 
     // Upload to base44
     try {
       if (window.base44) {
-        console.log('Uploading file to base44...');
+        console.log('📤 Uploading file to base44...');
         const { file_url } = await window.base44.integrations.Core.UploadFile({ file });
         currentImageUrl = file_url;
-        console.log('File uploaded successfully:', file_url);
+        console.log('✅ File uploaded successfully:', file_url);
       } else {
-        throw new Error('base44 SDK not initialized. Please check your configuration.');
+        throw new Error('base44 SDK not initialized');
       }
     } catch(e) {
-      console.error('Upload failed:', e);
+      console.error('❌ Upload failed:', e);
       currentImageUrl = localUrl;
       alert('Upload failed: ' + (e.message || 'Please try again.'));
     }
@@ -390,10 +378,10 @@
 
     try {
       if (!window.base44) {
-        throw new Error('base44 SDK not initialized. Please check your configuration.');
+        throw new Error('base44 SDK not initialized');
       }
 
-      console.log('Scanning number from image:', currentImageUrl);
+      console.log('🔍 Scanning number from image:', currentImageUrl);
       
       const result = await window.base44.integrations.Core.InvokeLLM({
         prompt: `You are a handwritten number recognition expert. Look at this image carefully.
@@ -413,13 +401,14 @@ Only return digits, no letters, no spaces, no punctuation.`,
       });
       
       const number = result.number || "0";
-      console.log('Number recognized:', number);
+      console.log('✅ Number recognized:', number);
+      console.log('Confidence:', result.confidence || 'N/A');
       
       document.getElementById("result-input").value = number;
       window.hide("step-scanning");
       window.show("step-result");
     } catch(e) {
-      console.error('Recognition failed:', e);
+      console.error('❌ Recognition failed:', e);
       window.hide("step-scanning");
       window.show("scan-btn");
       alert('Recognition failed: ' + (e.message || 'Please try again.'));
@@ -435,8 +424,7 @@ Only return digits, no letters, no spaces, no punctuation.`,
     window.showOnly("step-source");
   };
 
-  // Initialize
-  console.log('Number Scanner app initialized successfully!');
+  console.log('🚀 Number Scanner app ready!');
 </script>
 </body>
 </html>
