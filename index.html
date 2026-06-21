@@ -246,21 +246,53 @@
   </div>
 </div>
 
-<script>
+<script type="module">
+  import { createClient } from '@base44/sdk';
+  
+  // You'll need to define these or import them
+  // For now, I'll create placeholder values - replace with your actual imports
+  const appParams = {
+    appId: 'your-app-id', // Replace with your actual app ID
+    token: 'your-token', // Replace with your actual token
+    functionsVersion: 'v1',
+    appBaseUrl: 'https://your-app-base-url.com'
+  };
+  
+  const { appId, token, functionsVersion, appBaseUrl } = appParams;
+
+  // Create the base44 client
+  const base44 = createClient({
+    appId,
+    token,
+    functionsVersion,
+    serverUrl: '',
+    requiresAuth: false,
+    appBaseUrl
+  });
+
+  // Expose base44 to the global scope for use in inline onclick handlers
+  window.base44 = base44;
+
+  console.log('base44 client initialized:', base44);
+
   // ── State ──
   let currentImageUrl = null;
   let cameraStream = null;
 
   // ── Helpers ──
-  function show(id)   { document.getElementById(id).classList.remove("hidden"); }
-  function hide(id)   { document.getElementById(id).classList.add("hidden"); }
-  function showOnly(id) {
-    ["step-source","step-uploading","step-preview"].forEach(s => hide(s));
-    show(id);
-  }
+  window.show = function(id) { 
+    document.getElementById(id).classList.remove("hidden"); 
+  };
+  window.hide = function(id) { 
+    document.getElementById(id).classList.add("hidden"); 
+  };
+  window.showOnly = function(id) {
+    ["step-source","step-uploading","step-preview"].forEach(s => window.hide(s));
+    window.show(id);
+  };
 
   // ── Camera ──
-  async function openCamera() {
+  window.openCamera = async function() {
     const overlay = document.getElementById("camera-overlay");
     overlay.classList.add("active");
     document.getElementById("camera-error").classList.add("hidden");
@@ -280,118 +312,131 @@
       };
     } catch (e) {
       document.getElementById("video").style.display = "none";
-      show("camera-error");
+      window.show("camera-error");
     }
-  }
+  };
 
-  function closeCamera() {
-    stopStream();
+  window.closeCamera = function() {
+    window.stopStream();
     document.getElementById("camera-overlay").classList.remove("active");
     document.getElementById("video").style.display = "block";
-  }
+  };
 
-  function stopStream() {
+  window.stopStream = function() {
     if (cameraStream) { cameraStream.getTracks().forEach(t => t.stop()); cameraStream = null; }
-  }
+  };
 
-  function snapPhoto() {
+  window.snapPhoto = function() {
     const video = document.getElementById("video");
     const canvas = document.getElementById("snap-canvas");
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
     canvas.getContext("2d").drawImage(video, 0, 0);
-    stopStream();
+    window.stopStream();
     document.getElementById("camera-overlay").classList.remove("active");
     canvas.toBlob(blob => {
       const file = new File([blob], "capture.jpg", { type: "image/jpeg" });
-      processFile(file);
+      window.processFile(file);
     }, "image/jpeg", 0.95);
-  }
+  };
 
   // ── Gallery ──
-  function handleGallery(e) {
+  window.handleGallery = function(e) {
     const file = e.target.files?.[0];
-    if (file) processFile(file);
-  }
+    if (file) window.processFile(file);
+  };
 
   // ── Process file → upload ──
-  async function processFile(file) {
-    showOnly("step-uploading");
-    hide("step-result");
-    hide("step-scanning");
-    show("scan-btn");
+  window.processFile = async function(file) {
+    window.showOnly("step-uploading");
+    window.hide("step-result");
+    window.hide("step-scanning");
+    window.show("scan-btn");
     currentImageUrl = null;
 
     // Show local preview immediately (B&W via CSS filter)
     const localUrl = URL.createObjectURL(file);
     document.getElementById("preview-img").src = localUrl;
 
-    // Upload to base44 (replace with your own upload endpoint if needed)
+    // Upload to base44
     try {
-      // Try base44 SDK if available
       if (window.base44) {
+        console.log('Uploading file to base44...');
         const { file_url } = await window.base44.integrations.Core.UploadFile({ file });
         currentImageUrl = file_url;
+        console.log('File uploaded successfully:', file_url);
       } else {
-        // Fallback: use local blob URL for demo purposes
-        currentImageUrl = localUrl;
+        throw new Error('base44 SDK not initialized. Please check your configuration.');
       }
     } catch(e) {
+      console.error('Upload failed:', e);
       currentImageUrl = localUrl;
+      alert('Upload failed: ' + (e.message || 'Please try again.'));
     }
 
-    showOnly("step-preview");
-  }
+    window.showOnly("step-preview");
+  };
 
   // ── Scan ──
-  async function scanNumber() {
-    if (!currentImageUrl) return;
-    hide("scan-btn");
-    show("step-scanning");
-    hide("step-result");
+  window.scanNumber = async function() {
+    if (!currentImageUrl) {
+      alert('Please select an image first.');
+      return;
+    }
+    
+    window.hide("scan-btn");
+    window.show("step-scanning");
+    window.hide("step-result");
 
     try {
-      let number = "?";
-      if (window.base44) {
-        const result = await window.base44.integrations.Core.InvokeLLM({
-          prompt: `You are a handwritten number recognition expert. Look at this image carefully.
+      if (!window.base44) {
+        throw new Error('base44 SDK not initialized. Please check your configuration.');
+      }
+
+      console.log('Scanning number from image:', currentImageUrl);
+      
+      const result = await window.base44.integrations.Core.InvokeLLM({
+        prompt: `You are a handwritten number recognition expert. Look at this image carefully.
 Extract ONLY the number(s) you see. Return them as a single string of digits.
 If you see multiple numbers, combine them in reading order (left to right, top to bottom).
 If you cannot identify any numbers, return "0".
 Only return digits, no letters, no spaces, no punctuation.`,
-          file_urls: [currentImageUrl],
-          response_json_schema: {
-            type: "object",
-            properties: {
-              number: { type: "string" },
-              confidence: { type: "string", enum: ["high","medium","low"] }
-            },
-            required: ["number","confidence"]
-          }
-        });
-        number = result.number || "0";
-      } else {
-        number = "123"; // demo fallback
-      }
-
+        file_urls: [currentImageUrl],
+        response_json_schema: {
+          type: "object",
+          properties: {
+            number: { type: "string" },
+            confidence: { type: "string", enum: ["high","medium","low"] }
+          },
+          required: ["number","confidence"]
+        }
+      });
+      
+      const number = result.number || "0";
+      console.log('Number recognized:', number);
+      
       document.getElementById("result-input").value = number;
-      hide("step-scanning");
-      show("step-result");
+      window.hide("step-scanning");
+      window.show("step-result");
     } catch(e) {
-      hide("step-scanning");
-      show("scan-btn");
-      alert("Recognition failed. Please try again.");
+      console.error('Recognition failed:', e);
+      window.hide("step-scanning");
+      window.show("scan-btn");
+      alert('Recognition failed: ' + (e.message || 'Please try again.'));
     }
-  }
+  };
 
   // ── Reset ──
-  function resetAll() {
+  window.resetAll = function() {
     currentImageUrl = null;
     document.getElementById("result-input").value = "";
     document.getElementById("preview-img").src = "";
     document.getElementById("gallery-input").value = "";
-    showOnly("step-source");
-  }
+    window.showOnly("step-source");
+  };
+
+  // Initialize
+  console.log('Number Scanner app initialized successfully!');
 </script>
 </body>
 </html>
