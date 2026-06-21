@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Number Scanner</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #f8f9fa;
+      color: #111;
+      min-height: 100vh;
+    }
+
+    /* ── Layout ── */
+    .page { max-width: 480px; margin: 0 auto; padding: 2rem 1rem 3rem; }
+
+    /* ── Header ── */
+    .header { text-align: center; margin-bottom: 2.5rem; }
+    .header-icon {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 56px; height: 56px; border-radius: 16px;
+      background: rgba(79,70,229,.1); margin-bottom: 1rem;
+    }
+    .header-icon svg { width: 28px; height: 28px; color: #4f46e5; stroke: #4f46e5; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    h1 { font-size: 1.75rem; font-weight: 700; letter-spacing: -.02em; }
+    .subtitle { margin-top: .5rem; font-size: .875rem; color: #6b7280; max-width: 280px; margin-left: auto; margin-right: auto; }
+
+    /* ── Buttons ── */
+    .btn-camera {
+      width: 100%; border: 2px dashed rgba(79,70,229,.3); border-radius: 20px;
+      padding: 3.5rem 1rem; display: flex; flex-direction: column; align-items: center; gap: 1rem;
+      background: rgba(79,70,229,.04); cursor: pointer; transition: all .2s;
+    }
+    .btn-camera:hover, .btn-camera:active { border-color: #4f46e5; background: rgba(79,70,229,.09); transform: scale(.98); }
+    .cam-icon-wrap {
+      width: 80px; height: 80px; border-radius: 50%;
+      background: #4f46e5; display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 8px 24px rgba(79,70,229,.35);
+    }
+    .cam-icon-wrap svg { width: 36px; height: 36px; stroke: #fff; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .btn-camera-label { font-size: 1rem; font-weight: 600; }
+    .btn-camera-hint { font-size: .75rem; color: #6b7280; }
+
+    .btn-gallery {
+      width: 100%; border: 1px solid #e5e7eb; border-radius: 14px;
+      padding: .75rem 1rem; display: flex; align-items: center; justify-content: center; gap: .5rem;
+      background: #fff; cursor: pointer; font-size: .875rem; color: #6b7280;
+      transition: all .2s; margin-top: .75rem;
+    }
+    .btn-gallery:hover { border-color: rgba(79,70,229,.4); color: #111; }
+    .btn-gallery svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+    .btn-primary {
+      width: 100%; height: 48px; border-radius: 14px; border: none;
+      background: #4f46e5; color: #fff; font-size: 1rem; font-weight: 600;
+      cursor: pointer; display: flex; align-items: center; justify-content: center; gap: .5rem;
+      transition: background .2s, transform .1s;
+    }
+    .btn-primary:hover { background: #4338ca; }
+    .btn-primary:active { transform: scale(.98); }
+    .btn-primary svg { width: 20px; height: 20px; stroke: #fff; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+    .btn-outline {
+      width: 100%; height: 44px; border-radius: 14px;
+      border: 1px solid #e5e7eb; background: #fff; font-size: .875rem;
+      cursor: pointer; display: flex; align-items: center; justify-content: center; gap: .5rem;
+      color: #374151; transition: border-color .2s;
+    }
+    .btn-outline:hover { border-color: #4f46e5; }
+    .btn-outline svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+    /* ── States ── */
+    .spinner-wrap { display: flex; flex-direction: column; align-items: center; gap: 1rem; padding: 4rem 0; }
+    .spinner {
+      width: 32px; height: 32px; border: 3px solid #e5e7eb;
+      border-top-color: #4f46e5; border-radius: 50%; animation: spin .7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spinner-sm { width: 20px; height: 20px; border-width: 2px; }
+    .spinner-label { font-size: .875rem; color: #6b7280; }
+
+    /* ── Preview ── */
+    .preview-card { border: 1px solid #e5e7eb; border-radius: 20px; overflow: hidden; background: #fff; box-shadow: 0 1px 4px rgba(0,0,0,.06); }
+    .preview-bar { padding: .5rem .75rem; border-bottom: 1px solid #e5e7eb; background: #f9fafb; font-size: .7rem; font-weight: 500; color: #9ca3af; text-transform: uppercase; letter-spacing: .08em; }
+    .preview-img-wrap { padding: 1rem; background: #fff; display: flex; align-items: center; justify-content: center; }
+    .preview-img { max-height: 260px; width: auto; border-radius: 10px; object-fit: contain; filter: grayscale(100%) contrast(200%) brightness(1.1); background: #fff; }
+
+    /* ── Result ── */
+    .result-card { border: 1px solid #e5e7eb; border-radius: 20px; background: #fff; padding: 1.25rem; box-shadow: 0 1px 4px rgba(0,0,0,.06); }
+    .result-header { display: flex; align-items: center; gap: .5rem; margin-bottom: 1rem; }
+    .result-header svg { width: 20px; height: 20px; stroke: #10b981; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .result-header span { font-size: .875rem; font-weight: 600; }
+    .result-input {
+      width: 100%; height: 56px; border: 1px solid #e5e7eb; border-radius: 14px;
+      background: #f3f4f6; text-align: center; font-size: 2rem; font-family: "JetBrains Mono", "Courier New", monospace;
+      font-weight: 700; letter-spacing: .2em; color: #111; cursor: default; outline: none;
+    }
+    .result-note { margin-top: .75rem; font-size: .75rem; color: #9ca3af; text-align: center; }
+
+    /* ── Camera Overlay ── */
+    #camera-overlay {
+      position: fixed; inset: 0; z-index: 100;
+      background: #000; display: none; flex-direction: column;
+    }
+    #camera-overlay.active { display: flex; }
+    #camera-close {
+      position: absolute; top: 1rem; right: 1rem; z-index: 10;
+      width: 40px; height: 40px; border-radius: 50%;
+      background: rgba(0,0,0,.5); border: none; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; color: #fff;
+    }
+    #camera-close svg { width: 20px; height: 20px; stroke: #fff; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    #video { flex: 1; width: 100%; object-fit: cover; }
+    .viewfinder-overlay {
+      position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+      pointer-events: none;
+    }
+    .frame {
+      width: 280px; height: 190px; border: 2px solid rgba(255,255,255,.7);
+      border-radius: 14px; position: relative;
+    }
+    .frame::before, .frame::after,
+    .frame-inner::before, .frame-inner::after {
+      content: ""; position: absolute; width: 20px; height: 20px; border-color: #fff; border-style: solid;
+    }
+    .frame::before  { top: -2px; left: -2px;  border-width: 3px 0 0 3px; border-radius: 4px 0 0 0; }
+    .frame::after   { top: -2px; right: -2px; border-width: 3px 3px 0 0; border-radius: 0 4px 0 0; }
+    .frame-inner::before { bottom: -2px; left: -2px;  border-width: 0 0 3px 3px; border-radius: 0 0 0 4px; }
+    .frame-inner::after  { bottom: -2px; right: -2px; border-width: 0 3px 3px 0; border-radius: 0 0 4px 0; }
+    .frame-hint { position: absolute; bottom: -28px; left: 0; right: 0; text-align: center; color: rgba(255,255,255,.6); font-size: .75rem; }
+
+    .shutter-bar { padding: 1.5rem 0 2.5rem; display: flex; align-items: center; justify-content: center; background: #000; }
+    #shutter-btn {
+      width: 80px; height: 80px; border-radius: 50%; background: #fff; border: none;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 4px 16px rgba(0,0,0,.4); transition: transform .1s; position: relative;
+    }
+    #shutter-btn:active { transform: scale(.93); }
+    #shutter-btn::after { content: ""; position: absolute; inset: 5px; border-radius: 50%; border: 2px solid #d1d5db; }
+    #shutter-btn:disabled { opacity: .4; cursor: not-allowed; }
+
+    #camera-error { display: flex; align-items: center; justify-content: center; flex: 1; color: #fff; text-align: center; padding: 2rem; font-size: .9rem; line-height: 1.5; }
+
+    .action-stack { display: flex; flex-direction: column; gap: .75rem; }
+    .hidden { display: none !important; }
+
+    canvas#snap-canvas { display: none; }
+  </style>
+</head>
+<body>
+
+<!-- ══ Camera Overlay ══ -->
+<div id="camera-overlay">
+  <button id="camera-close" onclick="closeCamera()">
+    <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+  </button>
+  <video id="video" autoplay playsinline muted></video>
+  <div class="viewfinder-overlay" id="viewfinder" style="display:none">
+    <div class="frame">
+      <div class="frame-inner"></div>
+      <span class="frame-hint">Align number inside the frame</span>
+    </div>
+  </div>
+  <div id="camera-error" class="hidden">Camera access denied. Please allow camera permissions and try again.</div>
+  <div class="shutter-bar">
+    <button id="shutter-btn" onclick="snapPhoto()" disabled></button>
+  </div>
+</div>
+
+<canvas id="snap-canvas"></canvas>
+
+<!-- ══ Main Page ══ -->
+<div class="page">
+  <!-- Header -->
+  <div class="header">
+    <div class="header-icon">
+      <svg viewBox="0 0 24 24"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><line x1="7" y1="12" x2="17" y2="12"/></svg>
+    </div>
+    <h1>Number Scanner</h1>
+    <p class="subtitle">Point your phone camera at any handwritten number — it'll be recognized instantly.</p>
+  </div>
+
+  <!-- Step 1: Choose source -->
+  <div id="step-source">
+    <button class="btn-camera" onclick="openCamera()">
+      <div class="cam-icon-wrap">
+        <svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+      </div>
+      <div>
+        <div class="btn-camera-label">Open Camera</div>
+        <div class="btn-camera-hint">Point at your handwritten number and shoot</div>
+      </div>
+    </button>
+    <button class="btn-gallery" onclick="document.getElementById('gallery-input').click()">
+      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+      Or choose from gallery
+    </button>
+    <input id="gallery-input" type="file" accept="image/*" class="hidden" onchange="handleGallery(event)" />
+  </div>
+
+  <!-- Step 2: Uploading -->
+  <div id="step-uploading" class="hidden">
+    <div class="spinner-wrap">
+      <div class="spinner"></div>
+      <span class="spinner-label">Uploading image…</span>
+    </div>
+  </div>
+
+  <!-- Step 3: Preview + scan -->
+  <div id="step-preview" class="hidden">
+    <div class="action-stack">
+      <div class="preview-card">
+        <div class="preview-bar">Preview — Black &amp; White</div>
+        <div class="preview-img-wrap">
+          <img id="preview-img" class="preview-img" src="" alt="Handwritten number" />
+        </div>
+      </div>
+
+      <button id="scan-btn" class="btn-primary" onclick="scanNumber()">
+        <svg viewBox="0 0 24 24"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><line x1="7" y1="12" x2="17" y2="12"/></svg>
+        Scan Number
+      </button>
+
+      <div id="step-scanning" class="spinner-wrap hidden" style="padding:1rem 0">
+        <div class="spinner spinner-sm" style="border-top-color:#4f46e5"></div>
+        <span class="spinner-label">Recognizing handwriting…</span>
+      </div>
+
+      <div id="step-result" class="result-card hidden">
+        <div class="result-header">
+          <svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          <span>Recognized Number</span>
+        </div>
+        <input id="result-input" class="result-input" type="text" readonly value="" />
+        <p class="result-note">This field is auto-filled and read-only.</p>
+      </div>
+
+      <button class="btn-outline" onclick="resetAll()">
+        <svg viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.5"/></svg>
+        Scan Another
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ── State ──
+  let currentImageUrl = null;
+  let cameraStream = null;
+
+  // ── Helpers ──
+  function show(id)   { document.getElementById(id).classList.remove("hidden"); }
+  function hide(id)   { document.getElementById(id).classList.add("hidden"); }
+  function showOnly(id) {
+    ["step-source","step-uploading","step-preview"].forEach(s => hide(s));
+    show(id);
+  }
+
+  // ── Camera ──
+  async function openCamera() {
+    const overlay = document.getElementById("camera-overlay");
+    overlay.classList.add("active");
+    document.getElementById("camera-error").classList.add("hidden");
+    document.getElementById("viewfinder").style.display = "none";
+    document.getElementById("shutter-btn").disabled = true;
+
+    try {
+      cameraStream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: { ideal: "environment" }, width: { ideal: 1920 }, height: { ideal: 1080 } },
+        audio: false
+      });
+      const video = document.getElementById("video");
+      video.srcObject = cameraStream;
+      video.onloadedmetadata = () => {
+        document.getElementById("viewfinder").style.display = "flex";
+        document.getElementById("shutter-btn").disabled = false;
+      };
+    } catch (e) {
+      document.getElementById("video").style.display = "none";
+      show("camera-error");
+    }
+  }
+
+  function closeCamera() {
+    stopStream();
+    document.getElementById("camera-overlay").classList.remove("active");
+    document.getElementById("video").style.display = "block";
+  }
+
+  function stopStream() {
+    if (cameraStream) { cameraStream.getTracks().forEach(t => t.stop()); cameraStream = null; }
+  }
+
+  function snapPhoto() {
+    const video = document.getElementById("video");
+    const canvas = document.getElementById("snap-canvas");
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    canvas.getContext("2d").drawImage(video, 0, 0);
+    stopStream();
+    document.getElementById("camera-overlay").classList.remove("active");
+    canvas.toBlob(blob => {
+      const file = new File([blob], "capture.jpg", { type: "image/jpeg" });
+      processFile(file);
+    }, "image/jpeg", 0.95);
+  }
+
+  // ── Gallery ──
+  function handleGallery(e) {
+    const file = e.target.files?.[0];
+    if (file) processFile(file);
+  }
+
+  // ── Process file → upload ──
+  async function processFile(file) {
+    showOnly("step-uploading");
+    hide("step-result");
+    hide("step-scanning");
+    show("scan-btn");
+    currentImageUrl = null;
+
+    // Show local preview immediately (B&W via CSS filter)
+    const localUrl = URL.createObjectURL(file);
+    document.getElementById("preview-img").src = localUrl;
+
+    // Upload to base44 (replace with your own upload endpoint if needed)
+    try {
+      // Try base44 SDK if available
+      if (window.base44) {
+        const { file_url } = await window.base44.integrations.Core.UploadFile({ file });
+        currentImageUrl = file_url;
+      } else {
+        // Fallback: use local blob URL for demo purposes
+        currentImageUrl = localUrl;
+      }
+    } catch(e) {
+      currentImageUrl = localUrl;
+    }
+
+    showOnly("step-preview");
+  }
+
+  // ── Scan ──
+  async function scanNumber() {
+    if (!currentImageUrl) return;
+    hide("scan-btn");
+    show("step-scanning");
+    hide("step-result");
+
+    try {
+      let number = "?";
+      if (window.base44) {
+        const result = await window.base44.integrations.Core.InvokeLLM({
+          prompt: `You are a handwritten number recognition expert. Look at this image carefully.
+Extract ONLY the number(s) you see. Return them as a single string of digits.
+If you see multiple numbers, combine them in reading order (left to right, top to bottom).
+If you cannot identify any numbers, return "0".
+Only return digits, no letters, no spaces, no punctuation.`,
+          file_urls: [currentImageUrl],
+          response_json_schema: {
+            type: "object",
+            properties: {
+              number: { type: "string" },
+              confidence: { type: "string", enum: ["high","medium","low"] }
+            },
+            required: ["number","confidence"]
+          }
+        });
+        number = result.number || "0";
+      } else {
+        number = "123"; // demo fallback
+      }
+
+      document.getElementById("result-input").value = number;
+      hide("step-scanning");
+      show("step-result");
+    } catch(e) {
+      hide("step-scanning");
+      show("scan-btn");
+      alert("Recognition failed. Please try again.");
+    }
+  }
+
+  // ── Reset ──
+  function resetAll() {
+    currentImageUrl = null;
+    document.getElementById("result-input").value = "";
+    document.getElementById("preview-img").src = "";
+    document.getElementById("gallery-input").value = "";
+    showOnly("step-source");
+  }
+</script>
+</body>
+</html>
