@@ -1,430 +1,561 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Number Scanner</title>
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Number Scanner</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+        .bg-background { background-color: #f8f9fa; }
+        .bg-card { background-color: #ffffff; }
+        .bg-primary { background-color: #3b82f6; }
+        .bg-primary/10 { background-color: rgba(59, 130, 246, 0.1); }
+        .bg-primary/5 { background-color: rgba(59, 130, 246, 0.05); }
+        .bg-accent/50 { background-color: rgba(59, 130, 246, 0.08); }
+        .text-primary { color: #3b82f6; }
+        .text-primary-foreground { color: #ffffff; }
+        .text-foreground { color: #1a1a2e; }
+        .text-muted-foreground { color: #6b7280; }
+        .border-border { border-color: #e5e7eb; }
+        .border-primary { border-color: #3b82f6; }
+        .border-primary/30 { border-color: rgba(59, 130, 246, 0.3); }
+        .border-primary/40 { border-color: rgba(59, 130, 246, 0.4); }
+        .hover\:border-primary:hover { border-color: #3b82f6; }
+        .hover\:border-primary\/40:hover { border-color: rgba(59, 130, 246, 0.4); }
+        .hover\:bg-primary\/10:hover { background-color: rgba(59, 130, 246, 0.1); }
+        .hover\:bg-accent\/50:hover { background-color: rgba(59, 130, 246, 0.08); }
+        .hover\:bg-primary\/20:hover { background-color: rgba(59, 130, 246, 0.2); }
+        .group:hover .group-hover\:text-primary { color: #3b82f6; }
+        .group:hover .group-hover\:text-foreground { color: #1a1a2e; }
+        .group:hover .group-hover\:scale-110 { transform: scale(1.1); }
+        .active\:scale-95:active { transform: scale(0.95); }
+        .transition-all { transition: all 0.3s ease; }
+        .transition-colors { transition: color 0.2s ease, background-color 0.2s ease; }
+        .transition-transform { transition: transform 0.2s ease; }
+        .duration-200 { transition-duration: 200ms; }
+        .duration-300 { transition-duration: 300ms; }
+        .shadow-lg { box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); }
+        .shadow-sm { box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); }
+        .rounded-2xl { border-radius: 1rem; }
+        .rounded-xl { border-radius: 0.75rem; }
+        .rounded-full { border-radius: 9999px; }
+        .animate-spin { animation: spin 1s linear infinite; }
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        .max-w-lg { max-width: 32rem; }
+        .min-h-screen { min-height: 100vh; }
+        .overflow-hidden { overflow: hidden; }
+        .relative { position: relative; }
+        .object-cover { object-fit: cover; }
+        .object-contain { object-fit: contain; }
+        .max-h-96 { max-height: 24rem; }
+        .max-h-64 { max-height: 16rem; }
 
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background: #f8f9fa;
-      color: #111;
-      min-height: 100vh;
-    }
-
-    .page { max-width: 480px; margin: 0 auto; padding: 2rem 1rem 3rem; }
-
-    .header { text-align: center; margin-bottom: 2.5rem; }
-    .header-icon {
-      display: inline-flex; align-items: center; justify-content: center;
-      width: 56px; height: 56px; border-radius: 16px;
-      background: rgba(79,70,229,.1); margin-bottom: 1rem;
-    }
-    .header-icon svg { width: 28px; height: 28px; color: #4f46e5; stroke: #4f46e5; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-    h1 { font-size: 1.75rem; font-weight: 700; letter-spacing: -.02em; }
-    .subtitle { margin-top: .5rem; font-size: .875rem; color: #6b7280; max-width: 280px; margin-left: auto; margin-right: auto; }
-
-    .btn-camera {
-      width: 100%; border: 2px dashed rgba(79,70,229,.3); border-radius: 20px;
-      padding: 3.5rem 1rem; display: flex; flex-direction: column; align-items: center; gap: 1rem;
-      background: rgba(79,70,229,.04); cursor: pointer; transition: all .2s;
-    }
-    .btn-camera:hover, .btn-camera:active { border-color: #4f46e5; background: rgba(79,70,229,.09); transform: scale(.98); }
-    .cam-icon-wrap {
-      width: 80px; height: 80px; border-radius: 50%;
-      background: #4f46e5; display: flex; align-items: center; justify-content: center;
-      box-shadow: 0 8px 24px rgba(79,70,229,.35);
-    }
-    .cam-icon-wrap svg { width: 36px; height: 36px; stroke: #fff; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-    .btn-camera-label { font-size: 1rem; font-weight: 600; }
-    .btn-camera-hint { font-size: .75rem; color: #6b7280; }
-
-    .btn-gallery {
-      width: 100%; border: 1px solid #e5e7eb; border-radius: 14px;
-      padding: .75rem 1rem; display: flex; align-items: center; justify-content: center; gap: .5rem;
-      background: #fff; cursor: pointer; font-size: .875rem; color: #6b7280;
-      transition: all .2s; margin-top: .75rem;
-    }
-    .btn-gallery:hover { border-color: rgba(79,70,229,.4); color: #111; }
-    .btn-gallery svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-
-    .btn-primary {
-      width: 100%; height: 48px; border-radius: 14px; border: none;
-      background: #4f46e5; color: #fff; font-size: 1rem; font-weight: 600;
-      cursor: pointer; display: flex; align-items: center; justify-content: center; gap: .5rem;
-      transition: background .2s, transform .1s;
-    }
-    .btn-primary:hover { background: #4338ca; }
-    .btn-primary:active { transform: scale(.98); }
-    .btn-primary svg { width: 20px; height: 20px; stroke: #fff; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-
-    .btn-outline {
-      width: 100%; height: 44px; border-radius: 14px;
-      border: 1px solid #e5e7eb; background: #fff; font-size: .875rem;
-      cursor: pointer; display: flex; align-items: center; justify-content: center; gap: .5rem;
-      color: #374151; transition: border-color .2s;
-    }
-    .btn-outline:hover { border-color: #4f46e5; }
-    .btn-outline svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-
-    .spinner-wrap { display: flex; flex-direction: column; align-items: center; gap: 1rem; padding: 4rem 0; }
-    .spinner {
-      width: 32px; height: 32px; border: 3px solid #e5e7eb;
-      border-top-color: #4f46e5; border-radius: 50%; animation: spin .7s linear infinite;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    .spinner-sm { width: 20px; height: 20px; border-width: 2px; }
-    .spinner-label { font-size: .875rem; color: #6b7280; }
-
-    .preview-card { border: 1px solid #e5e7eb; border-radius: 20px; overflow: hidden; background: #fff; box-shadow: 0 1px 4px rgba(0,0,0,.06); }
-    .preview-bar { padding: .5rem .75rem; border-bottom: 1px solid #e5e7eb; background: #f9fafb; font-size: .7rem; font-weight: 500; color: #9ca3af; text-transform: uppercase; letter-spacing: .08em; }
-    .preview-img-wrap { padding: 1rem; background: #fff; display: flex; align-items: center; justify-content: center; }
-    .preview-img { max-height: 260px; width: auto; border-radius: 10px; object-fit: contain; filter: grayscale(100%) contrast(200%) brightness(1.1); background: #fff; }
-
-    .result-card { border: 1px solid #e5e7eb; border-radius: 20px; background: #fff; padding: 1.25rem; box-shadow: 0 1px 4px rgba(0,0,0,.06); }
-    .result-header { display: flex; align-items: center; gap: .5rem; margin-bottom: 1rem; }
-    .result-header svg { width: 20px; height: 20px; stroke: #10b981; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-    .result-header span { font-size: .875rem; font-weight: 600; }
-    .result-input {
-      width: 100%; height: 56px; border: 1px solid #e5e7eb; border-radius: 14px;
-      background: #f3f4f6; text-align: center; font-size: 2rem; font-family: "JetBrains Mono", "Courier New", monospace;
-      font-weight: 700; letter-spacing: .2em; color: #111; cursor: default; outline: none;
-    }
-    .result-note { margin-top: .75rem; font-size: .75rem; color: #9ca3af; text-align: center; }
-
-    #camera-overlay {
-      position: fixed; inset: 0; z-index: 100;
-      background: #000; display: none; flex-direction: column;
-    }
-    #camera-overlay.active { display: flex; }
-    #camera-close {
-      position: absolute; top: 1rem; right: 1rem; z-index: 10;
-      width: 40px; height: 40px; border-radius: 50%;
-      background: rgba(0,0,0,.5); border: none; cursor: pointer;
-      display: flex; align-items: center; justify-content: center; color: #fff;
-    }
-    #camera-close svg { width: 20px; height: 20px; stroke: #fff; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-    #video { flex: 1; width: 100%; object-fit: cover; }
-    .viewfinder-overlay {
-      position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
-      pointer-events: none;
-    }
-    .frame {
-      width: 280px; height: 190px; border: 2px solid rgba(255,255,255,.7);
-      border-radius: 14px; position: relative;
-    }
-    .frame::before, .frame::after,
-    .frame-inner::before, .frame-inner::after {
-      content: ""; position: absolute; width: 20px; height: 20px; border-color: #fff; border-style: solid;
-    }
-    .frame::before  { top: -2px; left: -2px;  border-width: 3px 0 0 3px; border-radius: 4px 0 0 0; }
-    .frame::after   { top: -2px; right: -2px; border-width: 3px 3px 0 0; border-radius: 0 4px 0 0; }
-    .frame-inner::before { bottom: -2px; left: -2px;  border-width: 0 0 3px 3px; border-radius: 0 0 0 4px; }
-    .frame-inner::after  { bottom: -2px; right: -2px; border-width: 0 3px 3px 0; border-radius: 0 0 4px 0; }
-    .frame-hint { position: absolute; bottom: -28px; left: 0; right: 0; text-align: center; color: rgba(255,255,255,.6); font-size: .75rem; }
-
-    .shutter-bar { padding: 1.5rem 0 2.5rem; display: flex; align-items: center; justify-content: center; background: #000; }
-    #shutter-btn {
-      width: 80px; height: 80px; border-radius: 50%; background: #fff; border: none;
-      cursor: pointer; display: flex; align-items: center; justify-content: center;
-      box-shadow: 0 4px 16px rgba(0,0,0,.4); transition: transform .1s; position: relative;
-    }
-    #shutter-btn:active { transform: scale(.93); }
-    #shutter-btn::after { content: ""; position: absolute; inset: 5px; border-radius: 50%; border: 2px solid #d1d5db; }
-    #shutter-btn:disabled { opacity: .4; cursor: not-allowed; }
-
-    #camera-error { display: flex; align-items: center; justify-content: center; flex: 1; color: #fff; text-align: center; padding: 2rem; font-size: .9rem; line-height: 1.5; }
-
-    .action-stack { display: flex; flex-direction: column; gap: .75rem; }
-    .hidden { display: none !important; }
-
-    canvas#snap-canvas { display: none; }
-  </style>
+        /* Camera overlay */
+        .camera-overlay {
+            position: fixed;
+            inset: 0;
+            background-color: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+        .camera-overlay video {
+            max-width: 100%;
+            max-height: 70vh;
+            border-radius: 0.75rem;
+            background-color: #000;
+        }
+        .camera-overlay .controls {
+            margin-top: 1.5rem;
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .btn {
+            padding: 0.625rem 1.5rem;
+            border-radius: 0.75rem;
+            font-weight: 600;
+            font-size: 0.875rem;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .btn-primary {
+            background-color: #3b82f6;
+            color: white;
+        }
+        .btn-primary:hover {
+            background-color: #2563eb;
+        }
+        .btn-danger {
+            background-color: #ef4444;
+            color: white;
+        }
+        .btn-danger:hover {
+            background-color: #dc2626;
+        }
+        .btn-outline {
+            background-color: transparent;
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        .btn-outline:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        .btn-secondary {
+            background-color: #e5e7eb;
+            color: #1a1a2e;
+        }
+        .btn-secondary:hover {
+            background-color: #d1d5db;
+        }
+        .btn-lg {
+            height: 3rem;
+            font-size: 1rem;
+        }
+        .w-full { width: 100%; }
+        .max-w-xs { max-width: 20rem; }
+        .mx-auto { margin-left: auto; margin-right: auto; }
+        .px-4 { padding-left: 1rem; padding-right: 1rem; }
+        .py-8 { padding-top: 2rem; padding-bottom: 2rem; }
+        .py-14 { padding-top: 3.5rem; padding-bottom: 3.5rem; }
+        .py-16 { padding-top: 4rem; padding-bottom: 4rem; }
+        .py-4 { padding-top: 1rem; padding-bottom: 1rem; }
+        .py-3 { padding-top: 0.75rem; padding-bottom: 0.75rem; }
+        .py-2 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
+        .px-6 { padding-left: 1.5rem; padding-right: 1.5rem; }
+        .mb-10 { margin-bottom: 2.5rem; }
+        .mb-8 { margin-bottom: 2rem; }
+        .mb-4 { margin-bottom: 1rem; }
+        .mb-2 { margin-bottom: 0.5rem; }
+        .mt-2 { margin-top: 0.5rem; }
+        .mt-1 { margin-top: 0.25rem; }
+        .mt-6 { margin-top: 1.5rem; }
+        .mr-2 { margin-right: 0.5rem; }
+        .space-y-4 > * + * { margin-top: 1rem; }
+        .space-y-6 > * + * { margin-top: 1.5rem; }
+        .space-y-3 > * + * { margin-top: 0.75rem; }
+        .space-x-4 > * + * { margin-left: 1rem; }
+        .gap-4 { gap: 1rem; }
+        .gap-3 { gap: 0.75rem; }
+        .gap-2 { gap: 0.5rem; }
+        .gap-1 { gap: 0.25rem; }
+        .flex { display: flex; }
+        .flex-col { flex-direction: column; }
+        .items-center { align-items: center; }
+        .justify-center { justify-content: center; }
+        .text-center { text-align: center; }
+        .text-sm { font-size: 0.875rem; }
+        .text-xs { font-size: 0.75rem; }
+        .text-base { font-size: 1rem; }
+        .text-2xl { font-size: 1.5rem; }
+        .text-3xl { font-size: 1.875rem; }
+        .text-5xl { font-size: 3rem; }
+        .font-semibold { font-weight: 600; }
+        .font-bold { font-weight: 700; }
+        .font-medium { font-weight: 500; }
+        .font-heading { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+        .tracking-tight { letter-spacing: -0.025em; }
+        .h-14 { height: 3.5rem; }
+        .h-12 { height: 3rem; }
+        .h-11 { height: 2.75rem; }
+        .h-20 { height: 5rem; }
+        .h-8 { height: 2rem; }
+        .h-7 { height: 1.75rem; }
+        .h-6 { height: 1.5rem; }
+        .h-5 { height: 1.25rem; }
+        .h-4 { height: 1rem; }
+        .w-14 { width: 3.5rem; }
+        .w-20 { width: 5rem; }
+        .w-8 { width: 2rem; }
+        .w-7 { width: 1.75rem; }
+        .w-6 { width: 1.5rem; }
+        .w-5 { width: 1.25rem; }
+        .w-4 { width: 1rem; }
+        .w-10 { width: 2.5rem; }
+        .inline-flex { display: inline-flex; }
+        .inline-block { display: inline-block; }
+        .hidden { display: none; }
+        .border-2 { border-width: 2px; }
+        .border { border-width: 1px; }
+        .border-t { border-top-width: 1px; }
+        .border-t-border { border-top-color: #e5e7eb; }
+        .bg-white { background-color: #ffffff; }
+        .bg-black\/50 { background-color: rgba(0, 0, 0, 0.5); }
+        .rounded-lg { border-radius: 0.5rem; }
+        .overflow-auto { overflow: auto; }
+        .z-50 { z-index: 50; }
+        .fixed { position: fixed; }
+        .inset-0 { top: 0; right: 0; bottom: 0; left: 0; }
+        .p-4 { padding: 1rem; }
+        .p-6 { padding: 1.5rem; }
+        .w-11\/12 { width: 91.666667%; }
+        .max-w-md { max-width: 28rem; }
+        .shadow-2xl { box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); }
+        .sm\:py-14 { padding-top: 3.5rem; padding-bottom: 3.5rem; }
+        .sm\:text-3xl { font-size: 1.875rem; }
+        .grid { display: grid; }
+        .grid-cols-4 { grid-template-columns: repeat(4, 1fr); }
+        .gap-2 { gap: 0.5rem; }
+        .w-12 { width: 3rem; }
+        .h-12 { height: 3rem; }
+        .text-2xl { font-size: 1.5rem; }
+        .text-white { color: #ffffff; }
+        .bg-green-500 { background-color: #22c55e; }
+        .bg-red-500 { background-color: #ef4444; }
+        .bg-blue-500 { background-color: #3b82f6; }
+        .bg-yellow-500 { background-color: #eab308; }
+        .hover\:bg-green-600:hover { background-color: #16a34a; }
+        .hover\:bg-red-600:hover { background-color: #dc2626; }
+        .hover\:bg-blue-600:hover { background-color: #2563eb; }
+        .hover\:bg-yellow-600:hover { background-color: #ca8a04; }
+    </style>
 </head>
 <body>
-
-<!-- Camera Overlay -->
-<div id="camera-overlay">
-  <button id="camera-close" onclick="closeCamera()">
-    <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-  </button>
-  <video id="video" autoplay playsinline muted></video>
-  <div class="viewfinder-overlay" id="viewfinder" style="display:none">
-    <div class="frame">
-      <div class="frame-inner"></div>
-      <span class="frame-hint">Align number inside the frame</span>
-    </div>
-  </div>
-  <div id="camera-error" class="hidden">Camera access denied. Please allow camera permissions and try again.</div>
-  <div class="shutter-bar">
-    <button id="shutter-btn" onclick="snapPhoto()" disabled></button>
-  </div>
-</div>
-
-<canvas id="snap-canvas"></canvas>
-
-<!-- Main Page -->
-<div class="page">
-  <div class="header">
-    <div class="header-icon">
-      <svg viewBox="0 0 24 24"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><line x1="7" y1="12" x2="17" y2="12"/></svg>
-    </div>
-    <h1>Number Scanner</h1>
-    <p class="subtitle">Point your phone camera at any handwritten number — it'll be recognized instantly.</p>
-  </div>
-
-  <!-- Step 1: Choose source -->
-  <div id="step-source">
-    <button class="btn-camera" onclick="openCamera()">
-      <div class="cam-icon-wrap">
-        <svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-      </div>
-      <div>
-        <div class="btn-camera-label">Open Camera</div>
-        <div class="btn-camera-hint">Point at your handwritten number and shoot</div>
-      </div>
-    </button>
-    <button class="btn-gallery" onclick="document.getElementById('gallery-input').click()">
-      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-      Or choose from gallery
-    </button>
-    <input id="gallery-input" type="file" accept="image/*" class="hidden" onchange="handleGallery(event)" />
-  </div>
-
-  <!-- Step 2: Uploading -->
-  <div id="step-uploading" class="hidden">
-    <div class="spinner-wrap">
-      <div class="spinner"></div>
-      <span class="spinner-label">Uploading image…</span>
-    </div>
-  </div>
-
-  <!-- Step 3: Preview + scan -->
-  <div id="step-preview" class="hidden">
-    <div class="action-stack">
-      <div class="preview-card">
-        <div class="preview-bar">Preview — Black &amp; White</div>
-        <div class="preview-img-wrap">
-          <img id="preview-img" class="preview-img" src="" alt="Handwritten number" />
+    <div id="app">
+        <!-- Camera Overlay -->
+        <div id="cameraOverlay" class="camera-overlay hidden">
+            <video id="video" autoplay playsinline></video>
+            <div class="controls">
+                <button class="btn btn-danger" onclick="closeCamera()">
+                    <i class="fas fa-times"></i> Cancel
+                </button>
+                <button class="btn btn-primary btn-lg" onclick="capturePhoto()">
+                    <i class="fas fa-camera"></i> Capture
+                </button>
+                <button class="btn btn-outline" onclick="switchCamera()">
+                    <i class="fas fa-sync-alt"></i> Switch
+                </button>
+            </div>
         </div>
-      </div>
 
-      <button id="scan-btn" class="btn-primary" onclick="scanNumber()">
-        <svg viewBox="0 0 24 24"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><line x1="7" y1="12" x2="17" y2="12"/></svg>
-        Scan Number
-      </button>
+        <div class="min-h-screen bg-background">
+            <div class="max-w-lg mx-auto px-4 py-8 sm:py-14">
+                <!-- Header -->
+                <div class="text-center mb-10">
+                    <div class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-primary/10 mb-4">
+                        <i class="fas fa-qrcode w-7 h-7 text-primary" style="font-size: 1.75rem;"></i>
+                    </div>
+                    <h1 class="text-2xl sm:text-3xl font-heading font-bold tracking-tight text-foreground">
+                        Number Scanner
+                    </h1>
+                    <p class="mt-2 text-sm text-muted-foreground max-w-xs mx-auto">
+                        Point your phone camera at any handwritten number — it'll be recognized instantly.
+                    </p>
+                </div>
 
-      <div id="step-scanning" class="spinner-wrap hidden" style="padding:1rem 0">
-        <div class="spinner spinner-sm" style="border-top-color:#4f46e5"></div>
-        <span class="spinner-label">Recognizing handwriting…</span>
-      </div>
+                <!-- Upload Area -->
+                <div id="uploadArea">
+                    <div class="space-y-4" id="uploadContent">
+                        <!-- Primary — camera -->
+                        <button onclick="openCamera()" class="w-full group relative overflow-hidden rounded-2xl border-2 border-primary/30 hover:border-primary transition-all duration-300 py-14 flex flex-col items-center gap-4 bg-primary/5 hover:bg-primary/10 active:scale-95">
+                            <div class="w-20 h-20 rounded-full bg-primary flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-200">
+                                <i class="fas fa-camera w-10 h-10 text-primary-foreground" style="font-size: 2.5rem;"></i>
+                            </div>
+                            <div class="text-center">
+                                <p class="text-base font-semibold text-foreground">Open Camera</p>
+                                <p class="text-xs text-muted-foreground mt-1">Point at your handwritten number and shoot</p>
+                            </div>
+                        </button>
 
-      <div id="step-result" class="result-card hidden">
-        <div class="result-header">
-          <svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-          <span>Recognized Number</span>
+                        <!-- Secondary — gallery -->
+                        <button onclick="document.getElementById('fileInput').click()" class="w-full group flex items-center justify-center gap-2 py-3 rounded-xl border border-border hover:border-primary/40 bg-card hover:bg-accent/50 transition-all duration-200 active:scale-95">
+                            <i class="fas fa-upload w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors"></i>
+                            <span class="text-sm text-muted-foreground group-hover:text-foreground transition-colors">
+                                Or choose from gallery
+                            </span>
+                        </button>
+
+                        <input id="fileInput" type="file" accept="image/*" class="hidden" onchange="handleFileChange(event)" />
+                    </div>
+
+                    <!-- Uploading State -->
+                    <div id="uploadingState" class="flex flex-col items-center gap-4 py-16 hidden">
+                        <i class="fas fa-spinner w-8 h-8 text-primary animate-spin" style="font-size: 2rem;"></i>
+                        <p class="text-sm text-muted-foreground">Uploading image…</p>
+                    </div>
+                </div>
+
+                <!-- Image Preview + Actions -->
+                <div id="resultArea" class="space-y-6 hidden">
+                    <div class="bg-white rounded-2xl overflow-hidden shadow-sm border border-border">
+                        <div class="relative bg-black/5 flex items-center justify-center p-4" style="min-height: 200px;">
+                            <img id="imagePreview" src="" alt="Uploaded image" class="max-h-96 object-contain rounded-lg" />
+                        </div>
+                    </div>
+
+                    <!-- Scan Button -->
+                    <button id="scanBtn" onclick="handleScan()" class="w-full h-12 text-base font-semibold rounded-xl btn-primary">
+                        <i class="fas fa-qrcode w-5 h-5 mr-2"></i>
+                        Scan Number
+                    </button>
+
+                    <!-- Scanning State -->
+                    <div id="scanningState" class="flex items-center justify-center gap-3 py-4 hidden">
+                        <i class="fas fa-spinner w-5 h-5 text-primary animate-spin"></i>
+                        <span class="text-sm text-muted-foreground font-medium">Recognizing handwriting…</span>
+                    </div>
+
+                    <!-- Result -->
+                    <div id="resultContainer" class="hidden">
+                        <div class="bg-white rounded-2xl shadow-sm border border-border overflow-hidden">
+                            <div class="bg-primary/5 px-6 py-4 border-b border-border">
+                                <h3 class="text-sm font-semibold text-foreground flex items-center gap-2">
+                                    <i class="fas fa-check-circle text-green-500"></i>
+                                    Recognition Result
+                                </h3>
+                            </div>
+                            <div class="px-6 py-6 text-center">
+                                <div class="text-5xl font-bold text-foreground tracking-wider" id="recognizedNumber">123</div>
+                                <div class="mt-3 flex items-center justify-center gap-2">
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800" id="confidenceBadge">
+                                        <i class="fas fa-check-circle mr-1"></i>
+                                        High Confidence
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Reset -->
+                    <button onclick="handleReset()" class="w-full h-11 rounded-xl btn-secondary">
+                        <i class="fas fa-undo w-4 h-4 mr-2"></i>
+                        Scan Another
+                    </button>
+                </div>
+            </div>
         </div>
-        <input id="result-input" class="result-input" type="text" readonly value="" />
-        <p class="result-note">This field is auto-filled and read-only.</p>
-      </div>
-
-      <button class="btn-outline" onclick="resetAll()">
-        <svg viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.5"/></svg>
-        Scan Another
-      </button>
     </div>
-  </div>
-</div>
 
-<script type="module">
-  import { createClient } from '@base44/sdk';
+    <script>
+        // State
+        let imageUrl = null;
+        let recognizedNumber = '';
+        let isScanning = false;
+        let isUploading = false;
+        let stream = null;
+        let facingMode = 'environment';
 
-  // Initialize base44 with your credentials
-  const base44 = createClient({
-    appId: "6a373ae576e115556c4f7af3",
-    headers: {
-      "api_key": "6f64e580e2f843ef985ec3e5336c3266"
-    }
-  });
+        // DOM refs
+        const uploadArea = document.getElementById('uploadArea');
+        const uploadContent = document.getElementById('uploadContent');
+        const uploadingState = document.getElementById('uploadingState');
+        const resultArea = document.getElementById('resultArea');
+        const imagePreview = document.getElementById('imagePreview');
+        const scanBtn = document.getElementById('scanBtn');
+        const scanningState = document.getElementById('scanningState');
+        const resultContainer = document.getElementById('resultContainer');
+        const recognizedNumberEl = document.getElementById('recognizedNumber');
+        const confidenceBadge = document.getElementById('confidenceBadge');
+        const cameraOverlay = document.getElementById('cameraOverlay');
+        const video = document.getElementById('video');
+        const fileInput = document.getElementById('fileInput');
 
-  // Expose base44 to the global scope for inline handlers
-  window.base44 = base44;
-
-  console.log('✅ base44 client initialized successfully!');
-  console.log('App ID:', '6a373ae576e115556c4f7af3');
-
-  // ── State ──
-  let currentImageUrl = null;
-  let cameraStream = null;
-
-  // ── Helpers ──
-  window.show = function(id) { 
-    document.getElementById(id).classList.remove("hidden"); 
-  };
-  window.hide = function(id) { 
-    document.getElementById(id).classList.add("hidden"); 
-  };
-  window.showOnly = function(id) {
-    ["step-source","step-uploading","step-preview"].forEach(s => window.hide(s));
-    window.show(id);
-  };
-
-  // ── Camera ──
-  window.openCamera = async function() {
-    const overlay = document.getElementById("camera-overlay");
-    overlay.classList.add("active");
-    document.getElementById("camera-error").classList.add("hidden");
-    document.getElementById("viewfinder").style.display = "none";
-    document.getElementById("shutter-btn").disabled = true;
-
-    try {
-      cameraStream = await navigator.mediaDevices.getUserMedia({
-        video: { 
-          facingMode: { ideal: "environment" }, 
-          width: { ideal: 1920 }, 
-          height: { ideal: 1080 } 
-        },
-        audio: false
-      });
-      const video = document.getElementById("video");
-      video.srcObject = cameraStream;
-      video.onloadedmetadata = () => {
-        document.getElementById("viewfinder").style.display = "flex";
-        document.getElementById("shutter-btn").disabled = false;
-      };
-    } catch (e) {
-      document.getElementById("video").style.display = "none";
-      window.show("camera-error");
-      console.error('Camera error:', e);
-    }
-  };
-
-  window.closeCamera = function() {
-    window.stopStream();
-    document.getElementById("camera-overlay").classList.remove("active");
-    document.getElementById("video").style.display = "block";
-  };
-
-  window.stopStream = function() {
-    if (cameraStream) { 
-      cameraStream.getTracks().forEach(t => t.stop()); 
-      cameraStream = null; 
-    }
-  };
-
-  window.snapPhoto = function() {
-    const video = document.getElementById("video");
-    const canvas = document.getElementById("snap-canvas");
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    canvas.getContext("2d").drawImage(video, 0, 0);
-    window.stopStream();
-    document.getElementById("camera-overlay").classList.remove("active");
-    canvas.toBlob(blob => {
-      const file = new File([blob], "capture.jpg", { type: "image/jpeg" });
-      window.processFile(file);
-    }, "image/jpeg", 0.95);
-  };
-
-  // ── Gallery ──
-  window.handleGallery = function(e) {
-    const file = e.target.files?.[0];
-    if (file) window.processFile(file);
-  };
-
-  // ── Process file → upload ──
-  window.processFile = async function(file) {
-    window.showOnly("step-uploading");
-    window.hide("step-result");
-    window.hide("step-scanning");
-    window.show("scan-btn");
-    currentImageUrl = null;
-
-    // Show local preview immediately
-    const localUrl = URL.createObjectURL(file);
-    document.getElementById("preview-img").src = localUrl;
-
-    // Upload to base44
-    try {
-      if (window.base44) {
-        console.log('📤 Uploading file to base44...');
-        const { file_url } = await window.base44.integrations.Core.UploadFile({ file });
-        currentImageUrl = file_url;
-        console.log('✅ File uploaded successfully:', file_url);
-      } else {
-        throw new Error('base44 SDK not initialized');
-      }
-    } catch(e) {
-      console.error('❌ Upload failed:', e);
-      currentImageUrl = localUrl;
-      alert('Upload failed: ' + (e.message || 'Please try again.'));
-    }
-
-    window.showOnly("step-preview");
-  };
-
-  // ── Scan ──
-  window.scanNumber = async function() {
-    if (!currentImageUrl) {
-      alert('Please select an image first.');
-      return;
-    }
-    
-    window.hide("scan-btn");
-    window.show("step-scanning");
-    window.hide("step-result");
-
-    try {
-      if (!window.base44) {
-        throw new Error('base44 SDK not initialized');
-      }
-
-      console.log('🔍 Scanning number from image:', currentImageUrl);
-      
-      const result = await window.base44.integrations.Core.InvokeLLM({
-        prompt: `You are a handwritten number recognition expert. Look at this image carefully.
-Extract ONLY the number(s) you see. Return them as a single string of digits.
-If you see multiple numbers, combine them in reading order (left to right, top to bottom).
-If you cannot identify any numbers, return "0".
-Only return digits, no letters, no spaces, no punctuation.`,
-        file_urls: [currentImageUrl],
-        response_json_schema: {
-          type: "object",
-          properties: {
-            number: { type: "string" },
-            confidence: { type: "string", enum: ["high","medium","low"] }
-          },
-          required: ["number","confidence"]
+        // --- Camera Functions ---
+        async function openCamera() {
+            cameraOverlay.classList.remove('hidden');
+            try {
+                const constraints = {
+                    video: {
+                        facingMode: facingMode,
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
+                    }
+                };
+                stream = await navigator.mediaDevices.getUserMedia(constraints);
+                video.srcObject = stream;
+                await video.play();
+            } catch (err) {
+                alert('Could not access camera. Please allow camera permissions or use the gallery option.');
+                closeCamera();
+            }
         }
-      });
-      
-      const number = result.number || "0";
-      console.log('✅ Number recognized:', number);
-      console.log('Confidence:', result.confidence || 'N/A');
-      
-      document.getElementById("result-input").value = number;
-      window.hide("step-scanning");
-      window.show("step-result");
-    } catch(e) {
-      console.error('❌ Recognition failed:', e);
-      window.hide("step-scanning");
-      window.show("scan-btn");
-      alert('Recognition failed: ' + (e.message || 'Please try again.'));
-    }
-  };
 
-  // ── Reset ──
-  window.resetAll = function() {
-    currentImageUrl = null;
-    document.getElementById("result-input").value = "";
-    document.getElementById("preview-img").src = "";
-    document.getElementById("gallery-input").value = "";
-    window.showOnly("step-source");
-  };
+        function closeCamera() {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                stream = null;
+            }
+            video.srcObject = null;
+            cameraOverlay.classList.add('hidden');
+        }
 
-  console.log('🚀 Number Scanner app ready!');
-</script>
+        function switchCamera() {
+            facingMode = facingMode === 'environment' ? 'user' : 'environment';
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                openCamera();
+            }
+        }
+
+        function capturePhoto() {
+            const canvas = document.createElement('canvas');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            canvas.toBlob((blob) => {
+                if (blob) {
+                    const file = new File([blob], 'camera-capture.jpg', { type: 'image/jpeg' });
+                    closeCamera();
+                    handleFile(file);
+                }
+            }, 'image/jpeg', 0.95);
+        }
+
+        // --- File Handling ---
+        function handleFileChange(e) {
+            const file = e.target.files?.[0];
+            if (file) handleFile(file);
+        }
+
+        function handleFile(file) {
+            if (!file) return;
+            
+            // Validate file type
+            const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+            if (!validTypes.includes(file.type)) {
+                alert('Please upload a JPEG, PNG, WEBP, or GIF image');
+                return;
+            }
+
+            // Validate file size (10MB)
+            if (file.size > 10 * 1024 * 1024) {
+                alert('Image size must be less than 10MB');
+                return;
+            }
+
+            // Show uploading state
+            uploadContent.classList.add('hidden');
+            uploadingState.classList.remove('hidden');
+            resultArea.classList.add('hidden');
+            recognizedNumber = '';
+            imageUrl = null;
+
+            // Simulate upload (replace with actual upload)
+            setTimeout(() => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    imageUrl = e.target.result;
+                    imagePreview.src = imageUrl;
+                    uploadContent.classList.remove('hidden');
+                    uploadingState.classList.add('hidden');
+                    resultArea.classList.remove('hidden');
+                    resultContainer.classList.add('hidden');
+                    scanBtn.classList.remove('hidden');
+                    scanningState.classList.add('hidden');
+                };
+                reader.readAsDataURL(file);
+            }, 800);
+        }
+
+        // --- Scan Function ---
+        function handleScan() {
+            if (!imageUrl) return;
+
+            // Show scanning state
+            scanBtn.classList.add('hidden');
+            scanningState.classList.remove('hidden');
+            resultContainer.classList.add('hidden');
+            isScanning = true;
+
+            // Simulate LLM recognition (replace with actual API call)
+            setTimeout(() => {
+                // Mock recognition - in real app, call your API
+                const mockResult = simulateRecognition(imageUrl);
+                
+                recognizedNumber = mockResult.number;
+                const confidence = mockResult.confidence;
+                
+                // Update UI
+                scanningState.classList.add('hidden');
+                resultContainer.classList.remove('hidden');
+                recognizedNumberEl.textContent = recognizedNumber;
+                
+                // Update confidence badge
+                const confidenceColors = {
+                    high: 'bg-green-100 text-green-800',
+                    medium: 'bg-yellow-100 text-yellow-800',
+                    low: 'bg-red-100 text-red-800'
+                };
+                const confidenceLabels = {
+                    high: 'High Confidence',
+                    medium: 'Medium Confidence',
+                    low: 'Low Confidence'
+                };
+                confidenceBadge.className = `inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${confidenceColors[confidence] || confidenceColors.low}`;
+                confidenceBadge.innerHTML = `<i class="fas fa-check-circle mr-1"></i> ${confidenceLabels[confidence] || confidenceLabels.low}`;
+                
+                isScanning = false;
+            }, 2000);
+        }
+
+        // --- Mock Recognition (replace with actual API) ---
+        function simulateRecognition(imageData) {
+            // This is a mock - in production, call your base44.integrations.Core.InvokeLLM
+            const numbers = ['42', '7', '123', '456', '789', '100', '2024', '3.14', '255', '999'];
+            const confidences = ['high', 'medium', 'low'];
+            
+            // Deterministic "recognition" based on image data length
+            const hash = imageData.length % numbers.length;
+            const confidenceHash = (imageData.length + 7) % confidences.length;
+            
+            return {
+                number: numbers[hash] || '0',
+                confidence: confidences[confidenceHash] || 'medium'
+            };
+        }
+
+        // --- Reset ---
+        function handleReset() {
+            imageUrl = null;
+            recognizedNumber = '';
+            isScanning = false;
+            isUploading = false;
+            
+            resultArea.classList.add('hidden');
+            resultContainer.classList.add('hidden');
+            scanBtn.classList.remove('hidden');
+            scanningState.classList.add('hidden');
+            uploadContent.classList.remove('hidden');
+            uploadingState.classList.add('hidden');
+            fileInput.value = '';
+            
+            // Reset state
+            document.getElementById('uploadContent').classList.remove('hidden');
+            document.getElementById('uploadingState').classList.add('hidden');
+        }
+
+        // --- Drag and Drop Support ---
+        document.addEventListener('dragover', (e) => {
+            e.preventDefault();
+        });
+
+        document.addEventListener('drop', (e) => {
+            e.preventDefault();
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFile(files[0]);
+            }
+        });
+
+        // Initialize
+        console.log('Number Scanner ready!');
+    </script>
 </body>
 </html>
